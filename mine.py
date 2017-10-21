@@ -8,14 +8,24 @@ import hashlib
 from apscheduler.schedulers.blocking import BlockingScheduler
 from rq import Queue
 
-'''
+sched = BlockingScheduler()
+
 import logging
 import sys
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-'''
 
 NUM_ZEROS = 5
+
+
+
+
+def run_mining():
+  node_blocks = sync.sync() #gather last node
+  prev_block = node_blocks[-1]
+  new_block = mine_blocks(prev_block)
+  new_block.self_save()
+  sched.add_job(run_mining, id='run_mining') #add the block again
 
 def generate_header(index, prev_hash, data, timestamp, nonce):
   return str(index) + prev_hash + data + str(timestamp) + str(nonce)
@@ -57,26 +67,18 @@ def mine_blocks(last_block):
   block_data['hash'] = block_hash
   block_data['nonce'] = nonce
 
-  #reschedule
-  sched.reschedule_job(run_mining, id='run_mining')
-  sched.restart()
+  new_block = Block(block_data)
+  return new_block #we mined the block. We're going to want to save it
 
-  return Block(block_data)
-
-def run_mining():
-  node_blocks = sync.sync() #gather last node
-  prev_block = node_blocks[-1]
-  new_block = mine_blocks(prev_block)
-  new_block.self_save()
+  #return True
 
 if __name__ == '__main__':
 
   #from worker import conn
 
-  sched = BlockingScheduler()
 
-  sched.add_job(run_mining, id='run_mining')
-  sched.add_job(check_for_broadcasted_blocks, 'interval', ['we mining'], seconds=3)
+  run_mining_job = sched.add_job(run_mining, id='run_mining')
+  check_for_broadcasted_blocks_job = sched.add_job(check_for_broadcasted_blocks, 'interval', seconds=3)
+
 
   sched.start()
-
