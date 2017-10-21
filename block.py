@@ -30,9 +30,9 @@ class Block(object):
     index_string = str(self.index).zfill(6) #front of zeros so they stay in numerical order
     filename = '%s/%s.json' % (chaindata_dir, index_string)
     with open(filename, 'w') as block_file:
-      json.dump(self.__dict__(), block_file)
+      json.dump(self.to_dict(), block_file)
 
-  def __dict__(self):
+  def to_dict(self):
     info = {}
     info['index'] = str(self.index)
     info['timestamp'] = str(self.timestamp)
