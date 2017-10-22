@@ -3,8 +3,8 @@ import os
 import json
 import datetime as date
 
-CHAINDATA_DIR = 'chaindata/'
-BROADCASTED_BLOCK_DIR = CHAINDATA_DIR + 'bblocs/'
+from config import *
+
 
 class Block(object):
   def __init__(self, dictionary):
@@ -45,7 +45,11 @@ class Block(object):
     return info
 
   def is_valid(self):
-    return True
+    self_hash = self.create_self_hash
+    if str(self_hash[0:NUM_ZEROS]) == '0' * NUM_ZEROS:
+      return True
+    else:
+      return False
 
   def __str__(self):
     return "Block<prev_hash: %s,hash: %s>" % (self.prev_hash, self.hash)

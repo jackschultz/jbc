@@ -6,6 +6,7 @@ import hashlib
 import requests
 
 from block import Block
+from config import *
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 from rq import Queue
@@ -16,8 +17,6 @@ import logging
 import sys
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-
-NUM_ZEROS = 5
 
 def run_mining():
   node_blocks = sync.sync() #gather last node
@@ -43,14 +42,14 @@ def check_for_broadcasted_blocks():
   print "checking for other node's blocks"
   print "no other blocks found"
 
-
 def broadcast_mined_block(block):
   '''
     We want to hit the other peers saying that we mined a block
   '''
   block_info_dict = block.to_dict()
-  r = requests.post('http://localhost:5000/mined', json=block_info_dict)
-  asdf = 4
+  for peer in PEERS:
+    r = requests.post(peer+'/mined', json=block_info_dict)
+  return True
 
 def mine_blocks(last_block):
   index = int(last_block.index) + 1

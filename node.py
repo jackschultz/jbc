@@ -2,16 +2,14 @@ from block import Block
 from flask import Flask, jsonify, request
 import sync
 import requests
-
 import os
 import json
+
+from config import *
 
 node = Flask(__name__)
 
 node_blocks = sync.sync()
-
-CHAINDATA_DIR = 'chaindata/'
-BROADCASTED_BLOCK_DIR = CHAINDATA_DIR + 'bblocs/'
 
 @node.route('/blockchain.json', methods=['GET'])
 def blockchain():
