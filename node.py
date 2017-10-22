@@ -1,5 +1,5 @@
 from block import Block
-from flask import Flask
+from flask import Flask, jsonify
 from celery import Celery
 import sync
 
@@ -34,6 +34,19 @@ def blockchain():
     python_blocks.append(block.__dict__())
   json_blocks = json.dumps(python_blocks)
   return json_blocks
+
+@node.route('/mined', methods=['POST'])
+def mined():
+  possible_block_data = request.get_json()
+  #validate possible_block
+  possible_block = Block(possible_block_data)
+  if possible_block.is_valid():
+    #save to file to possible folder
+    pass
+    return jsonify(confirmed=True)
+  else:
+    #ditch it
+    return jsonify(confirmed=False)
 
 if __name__ == '__main__':
   node.run()
