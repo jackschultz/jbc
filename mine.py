@@ -1,9 +1,11 @@
-from block import Block
 import datetime as date
 import time
 import sync
 import json
 import hashlib
+import requests
+
+from block import Block
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 from rq import Queue
@@ -17,15 +19,13 @@ logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 NUM_ZEROS = 5
 
-
-
-
 def run_mining():
   node_blocks = sync.sync() #gather last node
   prev_block = node_blocks[-1]
   new_block = mine_blocks(prev_block)
+  broadcast_mined_block(new_block)
   new_block.self_save()
-  sched.add_job(run_mining, id='run_mining') #add the block again
+  #sched.add_job(run_mining, id='run_mining') #add the block again
 
 def generate_header(index, prev_hash, data, timestamp, nonce):
   return str(index) + prev_hash + data + str(timestamp) + str(nonce)
@@ -42,6 +42,15 @@ def check_for_broadcasted_blocks():
   '''
   print "checking for other node's blocks"
   print "no other blocks found"
+
+
+def broadcast_mined_block(block):
+  '''
+    We want to hit the other peers saying that we mined a block
+  '''
+  block_info_dict = block.to_dict()
+  r = requests.post('http://localhost:5000/mined', json=block_info_dict)
+  asdf = 4
 
 def mine_blocks(last_block):
   index = int(last_block.index) + 1
@@ -80,5 +89,7 @@ if __name__ == '__main__':
   run_mining_job = sched.add_job(run_mining, id='run_mining')
   check_for_broadcasted_blocks_job = sched.add_job(check_for_broadcasted_blocks, 'interval', seconds=3)
 
+  run_mining()
 
-  sched.start()
+
+  #sched.start()

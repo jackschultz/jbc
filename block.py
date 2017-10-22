@@ -3,6 +3,9 @@ import os
 import json
 import datetime as date
 
+CHAINDATA_DIR = 'chaindata/'
+BROADCASTED_BLOCK_DIR = CHAINDATA_DIR + 'bblocs/'
+
 class Block(object):
   def __init__(self, dictionary):
     '''
@@ -26,9 +29,8 @@ class Block(object):
     return sha.hexdigest()
 
   def self_save(self):
-    chaindata_dir = 'chaindata'
     index_string = str(self.index).zfill(6) #front of zeros so they stay in numerical order
-    filename = '%s/%s.json' % (chaindata_dir, index_string)
+    filename = '%s/%s.json' % (CHAINDATA_DIR, index_string)
     with open(filename, 'w') as block_file:
       json.dump(self.to_dict(), block_file)
 
@@ -41,6 +43,9 @@ class Block(object):
     info['data'] = str(self.data)
     info['nonce'] = str(self.nonce)
     return info
+
+  def is_valid(self):
+    return True
 
   def __str__(self):
     return "Block<prev_hash: %s,hash: %s>" % (self.prev_hash, self.hash)
@@ -57,13 +62,15 @@ def create_first_block():
 
 if __name__ == '__main__':
   #check if chaindata folder exists.
-  chaindata_dir = 'chaindata/'
-  if not os.path.exists(chaindata_dir):
-    #make chaindata dir
-    os.mkdir(chaindata_dir)
+  if not os.path.exists(CHAINDATA_DIR):
+    #make chaindata dir and broadcasted block dir
+    os.mkdir(CHAINDATA_DIR)
+    os.mkdir(BROADCASTED_BLOCK_DIR)
   #check if dir is empty from just creation, or empty before
-  if os.listdir(chaindata_dir) == []:
+  if os.listdir(CHAINDATA_DIR) == []:
     #create and save first block
     first_block = create_first_block()
     first_block.self_save()
-
+  if not os.path.exists(BROADCASTED_BLOCK_DIR):
+    #have to check to see if the broadcasted block dir exists as well
+    os.mkdir(BROADCASTED_BLOCK_DIR)

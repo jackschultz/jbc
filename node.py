@@ -1,19 +1,17 @@
 from block import Block
-from flask import Flask, jsonify
-from celery import Celery
+from flask import Flask, jsonify, request
 import sync
+import requests
 
 import os
 import json
 
 node = Flask(__name__)
-node.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
-node.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
-
-celery = Celery(node.name, broker=node.config['CELERY_BROKER_URL'])
-celery.conf.update(node.config)
 
 node_blocks = sync.sync()
+
+CHAINDATA_DIR = 'chaindata/'
+BROADCASTED_BLOCK_DIR = CHAINDATA_DIR + 'bblocs/'
 
 @node.route('/blockchain.json', methods=['GET'])
 def blockchain():
@@ -38,11 +36,16 @@ def blockchain():
 @node.route('/mined', methods=['POST'])
 def mined():
   possible_block_data = request.get_json()
+  print possible_block_data
   #validate possible_block
   possible_block = Block(possible_block_data)
   if possible_block.is_valid():
     #save to file to possible folder
-    pass
+    index = possible_block.index
+    nonce = possible_block.nonce
+    filename = BROADCASTED_BLOCK_DIR + '%s_%s.json' % (index, nonce)
+    with open(filename, 'w') as block_file:
+      json.dump(possible_block.to_dict(), block_file)
     return jsonify(confirmed=True)
   else:
     #ditch it
