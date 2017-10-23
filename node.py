@@ -4,6 +4,7 @@ import sync
 import requests
 import os
 import json
+import sys
 
 from config import *
 
@@ -22,12 +23,12 @@ def blockchain():
     hash
     prev_hash
   '''
-  node_blocks = sync.sync() #update if they've changed
+  node_blocks = sync.sync_local() #update if they've changed
   # Convert our blocks into dictionaries
   # so we can send them as json objects later
   python_blocks = []
   for block in node_blocks:
-    python_blocks.append(block.__dict__())
+    python_blocks.append(block.to_dict())
   json_blocks = json.dumps(python_blocks)
   return json_blocks
 
@@ -50,4 +51,10 @@ def mined():
     return jsonify(confirmed=False)
 
 if __name__ == '__main__':
-  node.run()
+
+  if len(sys.argv) >= 2:
+    port = sys.argv[1]
+  else:
+    port = 5000
+
+  node.run(host='127.0.0.1', port=port)
