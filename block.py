@@ -12,9 +12,15 @@ class Block(object):
     '''
     for dictionary in args:
       for key, value in dictionary.items():
-        setattr(self, key, value)
+        if key in BLOCK_ASDF:
+          setattr(self, key, BLOCK_ASDF[key](value))
+        else:
+          setattr(self, key, value)
     for key in kwargs:
-      setattr(self, key, kwargs[key])
+      if key in BLOCK_ASDF:
+        setattr(self, key, BLOCK_ASDF[key](kwargs[key]))
+      else:
+        setattr(self, key, kwargs[key])
 
     if not hasattr(self, 'nonce'):
       #we're throwin this in for generation
@@ -61,11 +67,22 @@ class Block(object):
   def __str__(self):
     return "Block<index: %s>, <hash: %s>" % (self.index, self.hash)
 
+  def __eq__(self, other):
+    return (self.index == other.index and
+       self.timestamp == other.timestamp and
+       self.prev_hash == other.prev_hash and
+       self.hash == other.hash and
+       self.data == other.data and
+       self.nonce == other.nonce)
+
+  def __ne__(self, other):
+    return not self.__eq__(other)
+
 def create_first_block():
   # index zero and arbitrary previous hash
   block_data = {}
   block_data['index'] = 0
-  block_data['timestamp'] = date.datetime.now()
+  block_data['timestamp'] = date.datetime.now().strftime('%s')
   block_data['data'] = 'First block data'
   block_data['prev_hash'] = ''
   block_data['nonce'] = 0 #starting it at 0
@@ -76,11 +93,12 @@ if __name__ == '__main__':
   if not os.path.exists(CHAINDATA_DIR):
     #make chaindata dir and broadcasted block dir
     os.mkdir(CHAINDATA_DIR)
-    os.mkdir(BROADCASTED_BLOCK_DIR)
   #check if dir is empty from just creation, or empty before
-  if os.listdir(CHAINDATA_DIR) == []:
+  if os.listdir(CHAINDATA_DIR) == []: #need to ditch 
     #create and save first block
     first_block = create_first_block()
+    from mine import find_valid_nonce
+    first_block = find_valid_nonce(first_block)
     first_block.self_save()
   if not os.path.exists(BROADCASTED_BLOCK_DIR):
     #have to check to see if the broadcasted block dir exists as well

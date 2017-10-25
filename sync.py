@@ -1,22 +1,26 @@
 from block import Block
 from config import *
+from utils import is_valid_chain
 
 import os
 import json
 import requests
+import glob
 
 def sync_local():
   node_blocks = []
   #We're assuming that the folder and at least initial block exists
-  chaindata_dir = 'chaindata'
-  if os.path.exists(chaindata_dir):
-    for filename in os.listdir(chaindata_dir):
-      if filename.endswith('.json'):
-        filepath = '%s/%s' % (chaindata_dir, filename)
-        with open(filepath, 'r') as block_file:
+  if os.path.exists(CHAINDATA_DIR):
+    for filepath in glob.glob(os.path.join(CHAINDATA_DIR, '*.json')):
+      with open(filepath, 'r') as block_file:
+        try:
           block_info = json.load(block_file)
-          block_object = Block(block_info)
-          node_blocks.append(block_object)
+        except:
+          print filepath
+          import pdb;pdb.set_trace()
+          asdf = 4
+        block_object = Block(block_info)
+        node_blocks.append(block_object)
   return node_blocks
 
 def sync_overall():
@@ -27,8 +31,8 @@ def sync_overall():
     try:
       r = requests.get(peer_blockchain_url)
       blockchain = r.json()
-      if len(blockchain) > len(longest_blockchain):
-        longest_blockchain = blockchain
+      if len(blockchain) > len(longest_blockchain) and blockchain.is_valid_chain():
+        longest_blockchain = [Block(bc) for bc in blockchain]
     except requests.exceptions.ConnectionError:
       print "Peer at %s not running. Continuing to next peer." % peer
   print "Longest blockchain is %s blocks" % len(longest_blockchain)
