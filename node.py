@@ -23,13 +23,10 @@ def blockchain():
     hash
     prev_hash
   '''
-  node_blocks = sync.sync_local() #update if they've changed
+  local_chain = sync.sync_local() #update if they've changed
   # Convert our blocks into dictionaries
   # so we can send them as json objects later
-  python_blocks = []
-  for block in node_blocks:
-    python_blocks.append(block.to_dict())
-  json_blocks = json.dumps(python_blocks)
+  json_blocks = json.dumps(local_chain.block_list_dict())
   return json_blocks
 
 @node.route('/mined', methods=['POST'])
