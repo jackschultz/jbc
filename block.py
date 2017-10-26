@@ -119,6 +119,4 @@ if __name__ == '__main__':
     from mine import find_valid_nonce
     first_block = find_valid_nonce(first_block)
     first_block.self_save()
-  if not os.path.exists(BROADCASTED_BLOCK_DIR):
-    #have to check to see if the broadcasted block dir exists as well
-    os.mkdir(BROADCASTED_BLOCK_DIR)
+
