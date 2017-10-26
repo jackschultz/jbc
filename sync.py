@@ -10,7 +10,6 @@ import glob
 
 def sync_local():
   local_chain = Chain([])
-  print len(local_chain)
   #We're assuming that the folder and at least initial block exists
   if os.path.exists(CHAINDATA_DIR):
     for filepath in glob.glob(os.path.join(CHAINDATA_DIR, '*.json')):
@@ -23,7 +22,7 @@ def sync_local():
         local_chain.add_block(local_block)
   return local_chain
 
-def sync_overall():
+def sync_overall(save=False):
   best_chain = sync_local()
   for peer in PEERS:
     #try to connect to peer
@@ -31,7 +30,8 @@ def sync_overall():
     try:
       r = requests.get(peer_blockchain_url)
       peer_blockchain_dict = r.json()
-      peer_chain = Chain(peer_blockchain_dict)
+      peer_blocks = [Block(bdict) for bdict in peer_blockchain_dict]
+      peer_chain = Chain(peer_blocks)
 
       if peer_chain.is_valid() and peer_chain > best_chain:
         best_chain = peer_chain
@@ -40,8 +40,9 @@ def sync_overall():
       print "Peer at %s not running. Continuing to next peer." % peer
   print "Longest blockchain is %s blocks" % len(best_chain)
   #for now, save the new blockchain over whatever was there
-  best_chain.self_save()
+  if save:
+    best_chain.self_save()
   return best_chain
 
-def sync():
-  return sync_overall()
+def sync(save=False):
+  return sync_overall(save=save)

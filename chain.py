@@ -51,8 +51,8 @@ class Chain(object):
   def __eq__(self, other):
     if len(self) != len(other):
       return False
-    for sasdf, oasdf in zip(self.blocks, other.blocks):
-      if sasdf != oasdf:
+    for self_block, other_block in zip(self.blocks, other.blocks):
+      if self_block != other_block:
         return False
     return True
 

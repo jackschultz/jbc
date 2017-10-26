@@ -10,7 +10,7 @@ from config import *
 
 node = Flask(__name__)
 
-node_blocks = sync.sync()
+sync.sync() #want to sync and save the overall "best" blockchain from peers
 
 @node.route('/blockchain.json', methods=['GET'])
 def blockchain():

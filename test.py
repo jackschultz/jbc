@@ -42,6 +42,16 @@ block_three_later_in_time = Block(block_three_later_in_time_dir)
 assert block_three > block_three_later_in_time
 assert not block_three < block_three_later_in_time
 
+#incorrect prev_hash
+block_one_dir_invalid = {"nonce": "1225518", "index": "1", "hash": "00000c575050241e0a4df1acd7e6fb90cc1f599e2cc2908ec8225e10915006cc", "timestamp": "1508895386", "prev_hash": "0000010101193736271818923939229219283747438293874548392789878987", "data": "I block #1"}
+block_one_invalid_obj = Block(block_one_dir_invalid)
+assert not block_one_invalid_obj.is_valid()
+#nonce doesn't give it the correct hash
+block_one_dir_invalid = {"nonce": "1000000", "index": "1", "hash": "00000c575050241e0a4df1acd7e6fb90cc1f599e2cc2908ec8225e10915006cc", "timestamp": "1508895386", "prev_hash": "000002f9c703dc80340c08462a0d6acdac9d0e10eb4190f6e57af6bb0850d03c", "data": "I block #1"}
+block_one_invalid_obj = Block(block_one_dir_invalid)
+assert not block_one_invalid_obj.is_valid()
+
+
 #####################################
 #
 #  Bringing Chains into play
