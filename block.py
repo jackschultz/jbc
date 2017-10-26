@@ -12,13 +12,13 @@ class Block(object):
     '''
     for dictionary in args:
       for key, value in dictionary.items():
-        if key in BLOCK_ASDF:
-          setattr(self, key, BLOCK_ASDF[key](value))
+        if key in BLOCK_VAR_CONVERSIONS:
+          setattr(self, key, BLOCK_VAR_CONVERSIONS[key](value))
         else:
           setattr(self, key, value)
     for key in kwargs:
-      if key in BLOCK_ASDF:
-        setattr(self, key, BLOCK_ASDF[key](kwargs[key]))
+      if key in BLOCK_VAR_CONVERSIONS:
+        setattr(self, key, BLOCK_VAR_CONVERSIONS[key](kwargs[key]))
       else:
         setattr(self, key, kwargs[key])
 
@@ -77,6 +77,16 @@ class Block(object):
 
   def __ne__(self, other):
     return not self.__eq__(other)
+
+  def __gt__(self, other):
+    '''
+      Timestamp is what currently will determine the better one
+      Required that both the indicies are the same!!!
+    '''
+    return self.timestamp < other.timestamp
+
+  def __lt__(self, other):
+    return self.timestamp > other.timestamp
 
 def create_first_block():
   # index zero and arbitrary previous hash

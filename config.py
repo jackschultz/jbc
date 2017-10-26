@@ -9,4 +9,4 @@ PEERS = [
     'http://localhost:5003/',
     ]
 
-BLOCK_ASDF = {'index': int, 'nonce': int, 'hash': str, 'prev_hash': str, 'timestamp': int}
+BLOCK_VAR_CONVERSIONS = {'index': int, 'nonce': int, 'hash': str, 'prev_hash': str, 'timestamp': int}
