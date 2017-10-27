@@ -38,6 +38,8 @@ def sync_overall(save=False):
 
     except requests.exceptions.ConnectionError:
       print "Peer at %s not running. Continuing to next peer." % peer
+    else:
+      print "Peer at %s is running. Gathered their blochchain for analysis." % peer
   print "Longest blockchain is %s blocks" % len(best_chain)
   #for now, save the new blockchain over whatever was there
   if save:

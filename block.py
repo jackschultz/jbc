@@ -97,26 +97,3 @@ class Block(object):
   def __lt__(self, other):
     return self.timestamp > other.timestamp
 
-def create_first_block():
-  # index zero and arbitrary previous hash
-  block_data = {}
-  block_data['index'] = 0
-  block_data['timestamp'] = date.datetime.now().strftime('%s')
-  block_data['data'] = 'First block data'
-  block_data['prev_hash'] = ''
-  block_data['nonce'] = 0 #starting it at 0
-  return Block(block_data)
-
-if __name__ == '__main__':
-  #check if chaindata folder exists.
-  if not os.path.exists(CHAINDATA_DIR):
-    #make chaindata dir and broadcasted block dir
-    os.mkdir(CHAINDATA_DIR)
-  #check if dir is empty from just creation, or empty before
-  if os.listdir(CHAINDATA_DIR) == []: #need to ditch
-    #create and save first block
-    first_block = create_first_block()
-    from mine import find_valid_nonce
-    first_block = find_valid_nonce(first_block)
-    first_block.self_save()
-
