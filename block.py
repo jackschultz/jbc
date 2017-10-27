@@ -1,7 +1,6 @@
 import hashlib
 import os
 import json
-import datetime as date
 
 import utils
 from config import *
@@ -18,22 +17,6 @@ class Block(object):
         setattr(self, key, value)
     if not hasattr(self, 'hash'): #in creating the first block, needs to be removed in future
       self.hash = self.update_self_hash()
-
-    '''
-  def __init__(self, *args, **kwargs):
-      We're looking for index, timestamp, data, prev_hash, nonce
-    for dictionary in args:
-      for key, value in dictionary.items():
-        if key in BLOCK_VAR_CONVERSIONS:
-          setattr(self, key, BLOCK_VAR_CONVERSIONS[key](value))
-        else:
-          setattr(self, key, value)
-    for key in kwargs:
-      if key in BLOCK_VAR_CONVERSIONS:
-        setattr(self, key, BLOCK_VAR_CONVERSIONS[key](kwargs[key]))
-      else:
-        setattr(self, key, kwargs[key])
-    '''
 
     if not hasattr(self, 'nonce'):
       #we're throwin this in for generation

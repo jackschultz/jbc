@@ -26,5 +26,4 @@ if __name__ == '__main__':
     first_block.self_save()
   elif os.listdir(CHAINDATA_DIR) == []:
     print "Chaindata dir already exists with blocks.\nIf you want to regenerate the blocks, delete /chaindata and rerun"
-  
 
