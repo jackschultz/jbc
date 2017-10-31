@@ -1,16 +1,22 @@
 from block import Block
+import mine
 from flask import Flask, jsonify, request
 import sync
 import requests
 import os
 import json
 import sys
+import apscheduler
 
+import utils
 from config import *
 
 node = Flask(__name__)
 
 sync.sync(save=True) #want to sync and save the overall "best" blockchain from peers
+
+from apscheduler.schedulers.background import BackgroundScheduler
+sched = BackgroundScheduler(standalone=True)
 
 @node.route('/blockchain.json', methods=['GET'])
 def blockchain():
@@ -31,21 +37,13 @@ def blockchain():
 
 @node.route('/mined', methods=['POST'])
 def mined():
-  possible_block_data = request.get_json()
-  print possible_block_data
-  #validate possible_block
-  possible_block = Block(possible_block_data)
-  if possible_block.is_valid():
-    #save to file to possible folder
-    index = possible_block.index
-    nonce = possible_block.nonce
-    filename = BROADCASTED_BLOCK_DIR + '%s_%s.json' % (index, nonce)
-    with open(filename, 'w') as block_file:
-      json.dump(possible_block.to_dict(), block_file)
-    return jsonify(confirmed=True)
-  else:
-    #ditch it
-    return jsonify(confirmed=False)
+  possible_block_dict = request.get_json()
+  print possible_block_dict
+  print sched.get_jobs()
+  print sched
+  valid = mine.validate_possible_block(sched, possible_block_dict)
+  print valid
+  return jsonify(confirmed=valid)
 
 if __name__ == '__main__':
 
@@ -54,4 +52,17 @@ if __name__ == '__main__':
   else:
     port = 5000
 
+  mine.sched = sched #to override the BlockingScheduler in the
+  #in this case, sched is the background sched
+  job = sched.add_job(mine.mine_for_block, id='mine_for_block')
+  sched.add_listener(mine.mine_for_block_listener, apscheduler.events.EVENT_JOB_EXECUTED)
+  sched.start()
+
+  import time
+  time.sleep(2)
+  job.pause()
+  time.sleep(3)
+  job.resume()
+
   node.run(host='127.0.0.1', port=port)
+
