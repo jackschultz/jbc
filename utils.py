@@ -23,7 +23,7 @@ def dict_from_block_attributes(**kwargs):
       info[key] = kwargs[key]
   return info
 
-def create_new_block_from_prev(prev_block=None):
+def create_new_block_from_prev(prev_block=None, data=None):
   if not prev_block:
     # index zero and arbitrary previous hash
     index = 0
@@ -32,9 +32,10 @@ def create_new_block_from_prev(prev_block=None):
     index = int(prev_block.index) + 1
     prev_hash = prev_block.hash
 
-  filename = '%sdata.txt' % (CHAINDATA_DIR)
-  with open(filename, 'r') as data_file:
-    data = data_file.read()
+  if not data:
+    filename = '%sdata.txt' % (CHAINDATA_DIR)
+    with open(filename, 'r') as data_file:
+      data = data_file.read()
 
   nonce = 0
   timestamp = datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S%f')
