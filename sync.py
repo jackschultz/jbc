@@ -1,7 +1,6 @@
-from block import Block
 from chain import Chain
 from config import *
-from utils import is_valid_chain
+from block import Block
 
 import os
 import json
