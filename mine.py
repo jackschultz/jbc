@@ -23,8 +23,6 @@ import logging
 import sys
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-STANDARD_ROUNDS = 100000
-
 def mine_for_block(chain=None, rounds=STANDARD_ROUNDS, start_nonce=0):
   if not chain:
     chain = sync.sync_local() #gather last node
@@ -42,6 +40,8 @@ def mine_from_prev_block(prev_block, rounds=STANDARD_ROUNDS, start_nonce=0):
 def mine_block(new_block, rounds=STANDARD_ROUNDS, start_nonce=0):
   #Attempting to find a valid nonce to match the required difficulty
   #of leading zeros. We're only going to try 1000
+  print "new block timestamp"
+  print new_block.timestamp
   nonce_range = [i+start_nonce for i in range(rounds)]
   for nonce in nonce_range:
     new_block.nonce = nonce
@@ -63,19 +63,53 @@ def mine_for_block_listener(event):
   if new_block:
     print "Mined a new block"
     new_block.self_save()
-    sched.add_job(mine_from_prev_block, args=[new_block], kwargs={'rounds':STANDARD_ROUNDS, 'start_nonce':0}, id='mine_for_block') #add the block again
+    broadcast_mined_block(new_block)
+    sched.add_job(mine_from_prev_block, args=[new_block], kwargs={'rounds':STANDARD_ROUNDS, 'start_nonce':0}, id='mining') #add the block again
   else:
-    #tell the world that you won!
-    #broadcast_mined_block(new_block)
     print event.retval
-    sched.add_job(mine_for_block, kwargs={'rounds':rounds, 'start_nonce':start_nonce+rounds}, id='mine_for_block') #add the block again
+    sched.add_job(mine_for_block, kwargs={'rounds':rounds, 'start_nonce':start_nonce+rounds}, id='mining') #add the block again
     sched.print_jobs()
+
+def broadcast_mined_block(new_block):
+  #  We want to hit the other peers saying that we mined a block
+  block_info_dict = new_block.__dict__
+  for peer in PEERS:
+    endpoint = "%s%s" % (peer[0], peer[1])
+    #see if we can broadcast it
+    try:
+      r = requests.post(peer+'mined', json=block_info_dict)
+    except requests.exceptions.ConnectionError:
+      print "Peer %s not connected" % peer
+      continue
+  return True
+
+def validate_possible_block(possible_block_dict):
+
+  possible_block = Block(possible_block_dict)
+  if possible_block.is_valid():
+    possible_block.self_save()
+
+    #we want to kill and restart the mining block so it knows it lost
+    sched.print_jobs()
+    try:
+      sched.remove_job('mining')
+      print "removed running mine job in validating possible block"
+    except apscheduler.jobstores.base.JobLookupError:
+      print "mining job didn't exist when validating possible block"
+
+    print "readding mine for block validating_possible_block"
+    print sched
+    print sched.get_jobs()
+    sched.add_job(mine_for_block, kwargs={'rounds':STANDARD_ROUNDS, 'start_nonce':0}, id='mining') #add the block again
+    print sched.get_jobs()
+
+    return True
+  return False
+
 
 if __name__ == '__main__':
 
-  sched.add_job(mine_for_block, kwargs={'rounds':STANDARD_ROUNDS, 'start_nonce':0}, id='mine_for_block') #add the block again
+  sched.add_job(mine_for_block, kwargs={'rounds':STANDARD_ROUNDS, 'start_nonce':0}, id='mining') #add the block again
   sched.add_listener(mine_for_block_listener, apscheduler.events.EVENT_JOB_EXECUTED)#, args=sched)
   sched.start()
-
-
 

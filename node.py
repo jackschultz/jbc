@@ -7,6 +7,7 @@ import os
 import json
 import sys
 import apscheduler
+import argparse
 
 import utils
 from config import *
@@ -41,28 +42,33 @@ def mined():
   print possible_block_dict
   print sched.get_jobs()
   print sched
-  valid = mine.validate_possible_block(sched, possible_block_dict)
-  print valid
-  return jsonify(confirmed=valid)
+
+  sched.add_job(mine.validate_possible_block, args=[possible_block_dict], id='validate_possible_block') #add the block again
+
+  return jsonify(received=True)
 
 if __name__ == '__main__':
 
-  if len(sys.argv) >= 2:
-    port = sys.argv[1]
-  else:
-    port = 5000
+  #args!
+  parser = argparse.ArgumentParser(description='JBC Node')
+  parser.add_argument('--port', '-p', default='5000',
+                    help='what port we will run the node on')
+  parser.add_argument('--mine', '-m', dest='mine', action='store_true')
+  args = parser.parse_args()
+
+  filename = '%sdata.txt' % (CHAINDATA_DIR)
+  with open(filename, 'w') as data_file:
+    data_file.write("Mined by node on port %s" % args.port)
 
   mine.sched = sched #to override the BlockingScheduler in the
-  #in this case, sched is the background sched
-  job = sched.add_job(mine.mine_for_block, id='mine_for_block')
-  sched.add_listener(mine.mine_for_block_listener, apscheduler.events.EVENT_JOB_EXECUTED)
-  sched.start()
+  #only mine if we want to
+  if args.mine:
+    #in this case, sched is the background sched
+    sched.add_job(mine.mine_for_block, kwargs={'rounds':STANDARD_ROUNDS, 'start_nonce':0}, id='mining') #add the block again
+    sched.add_listener(mine.mine_for_block_listener, apscheduler.events.EVENT_JOB_EXECUTED)#, args=sched)
 
-  import time
-  time.sleep(2)
-  job.pause()
-  time.sleep(3)
-  job.resume()
+  sched.start() #want this to start so we can validate on the schedule and not rely on Flask
 
-  node.run(host='127.0.0.1', port=port)
+  #now we know what port to use
+  node.run(host='127.0.0.1', port=args.port)
 
