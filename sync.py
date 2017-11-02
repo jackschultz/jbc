@@ -32,6 +32,7 @@ def sync_overall(save=False):
       peer_blocks = [Block(bdict) for bdict in peer_blockchain_dict]
       peer_chain = Chain(peer_blocks)
 
+      print peer_chain.is_valid()
       if peer_chain.is_valid() and len(peer_chain) > len(best_chain):
         best_chain = peer_chain
 

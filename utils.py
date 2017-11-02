@@ -40,7 +40,16 @@ def create_new_block_from_prev(prev_block=None, data=None):
   nonce = 0
   timestamp = datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S%f')
   block_info_dict = dict_from_block_attributes(index=index, timestamp=timestamp, data=data, prev_hash=prev_hash, nonce=nonce)
-  print block_info_dict
   new_block = block.Block(block_info_dict)
   return new_block
 
+def find_valid_nonce(find_block, data=None):
+  find_block.nonce = 0
+  find_block.update_self_hash()#calculate_hash(index, prev_hash, data, timestamp, nonce)
+  if not find_block.data:
+    find_block.data = data
+  while str(find_block.hash[0:NUM_ZEROS]) != '0' * NUM_ZEROS:
+    find_block.nonce += 1
+    find_block.update_self_hash()
+  assert find_block.is_valid()
+  return find_block

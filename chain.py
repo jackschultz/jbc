@@ -18,10 +18,13 @@ class Chain(object):
     for index, cur_block in enumerate(self.blocks[1:]):
       prev_block = self.blocks[index]
       if prev_block.index+1 != cur_block.index:
+        print 'index error'
         return False
       if not cur_block.is_valid(): #checks the hash
+        print 'block invalid'
         return False
       if prev_block.hash != cur_block.prev_hash:
+        print 'hash error'
         return False
     return True
 

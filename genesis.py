@@ -17,6 +17,8 @@ if __name__ == '__main__':
 
   parser = argparse.ArgumentParser(description='Generating Blockchain')
   parser.add_argument('--first', '-f', dest='first', default=False, action='store_true', help='generate the first node ourselves')
+  parser.add_argument('--port', '-p', default='5000',
+                    help='what port we will run the node on')
   args = parser.parse_args()
 
   #check if dir is empty from just creation, or empty before
@@ -29,6 +31,10 @@ if __name__ == '__main__':
       #create the first block
       first_block = mine_first_block()
       first_block.self_save()
+      #need a data.txt to tell which port we're running on
+      filename = "%s/data.txt" % CHAINDATA_DIR
+      with open(filename, 'w') as data_file:
+        data_file.write('Block mined by node on port %s' % args.port)
     else:
       print "Chaindata directory already has files. If you want to generate a first block, delete files and rerun"
   else:

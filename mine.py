@@ -27,8 +27,6 @@ def mine_for_block(chain=None, rounds=STANDARD_ROUNDS, start_nonce=0):
   if not chain:
     chain = sync.sync_local() #gather last node
 
-  print rounds
-  print start_nonce
   prev_block = chain.most_recent_block()
   return mine_from_prev_block(prev_block, rounds=rounds, start_nonce=start_nonce)
 
@@ -40,8 +38,6 @@ def mine_from_prev_block(prev_block, rounds=STANDARD_ROUNDS, start_nonce=0):
 def mine_block(new_block, rounds=STANDARD_ROUNDS, start_nonce=0):
   #Attempting to find a valid nonce to match the required difficulty
   #of leading zeros. We're only going to try 1000
-  print "new block timestamp"
-  print new_block.timestamp
   nonce_range = [i+start_nonce for i in range(rounds)]
   for nonce in nonce_range:
     new_block.nonce = nonce
@@ -56,19 +52,21 @@ def mine_block(new_block, rounds=STANDARD_ROUNDS, start_nonce=0):
   return None, rounds, start_nonce
 
 def mine_for_block_listener(event):
-  new_block, rounds, start_nonce = event.retval
-  #if didn't mine, new_block is None
-  #we'd use rounds and start_nonce to know what the next
-  #mining task should use
-  if new_block:
-    print "Mined a new block"
-    new_block.self_save()
-    broadcast_mined_block(new_block)
-    sched.add_job(mine_from_prev_block, args=[new_block], kwargs={'rounds':STANDARD_ROUNDS, 'start_nonce':0}, id='mining') #add the block again
-  else:
-    print event.retval
-    sched.add_job(mine_for_block, kwargs={'rounds':rounds, 'start_nonce':start_nonce+rounds}, id='mining') #add the block again
-    sched.print_jobs()
+  #need to check if the finishing job is the mining
+  if event.job_id == 'mining':
+    new_block, rounds, start_nonce = event.retval
+    #if didn't mine, new_block is None
+    #we'd use rounds and start_nonce to know what the next
+    #mining task should use
+    if new_block:
+      print "Mined a new block"
+      new_block.self_save()
+      broadcast_mined_block(new_block)
+      sched.add_job(mine_from_prev_block, args=[new_block], kwargs={'rounds':STANDARD_ROUNDS, 'start_nonce':0}, id='mining') #add the block again
+    else:
+      print event.retval
+      sched.add_job(mine_for_block, kwargs={'rounds':rounds, 'start_nonce':start_nonce+rounds}, id='mining') #add the block again
+      sched.print_jobs()
 
 def broadcast_mined_block(new_block):
   #  We want to hit the other peers saying that we mined a block
@@ -110,6 +108,6 @@ def validate_possible_block(possible_block_dict):
 if __name__ == '__main__':
 
   sched.add_job(mine_for_block, kwargs={'rounds':STANDARD_ROUNDS, 'start_nonce':0}, id='mining') #add the block again
-  sched.add_listener(mine_for_block_listener, apscheduler.events.EVENT_JOB_EXECUTED)#, args=sched)
+  sched.add_listener(mine_for_block_listener, apscheduler.events.EVENT_JOB_EXECUTED)
   sched.start()
 
