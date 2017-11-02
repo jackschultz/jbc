@@ -23,7 +23,7 @@ def dict_from_block_attributes(**kwargs):
       info[key] = kwargs[key]
   return info
 
-def create_new_block_from_prev(prev_block=None, data=None):
+def create_new_block_from_prev(prev_block=None, data=None, timestamp=None):
   if not prev_block:
     # index zero and arbitrary previous hash
     index = 0
@@ -37,8 +37,10 @@ def create_new_block_from_prev(prev_block=None, data=None):
     with open(filename, 'r') as data_file:
       data = data_file.read()
 
+  if not timestamp:
+    timestamp = datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S%f')
+
   nonce = 0
-  timestamp = datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S%f')
   block_info_dict = dict_from_block_attributes(index=index, timestamp=timestamp, data=data, prev_hash=prev_hash, nonce=nonce)
   new_block = block.Block(block_info_dict)
   return new_block

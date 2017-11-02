@@ -23,16 +23,16 @@ import logging
 import sys
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-def mine_for_block(chain=None, rounds=STANDARD_ROUNDS, start_nonce=0):
+def mine_for_block(chain=None, rounds=STANDARD_ROUNDS, start_nonce=0, timestamp=None):
   if not chain:
     chain = sync.sync_local() #gather last node
 
   prev_block = chain.most_recent_block()
-  return mine_from_prev_block(prev_block, rounds=rounds, start_nonce=start_nonce)
+  return mine_from_prev_block(prev_block, rounds=rounds, start_nonce=start_nonce, timestamp=timestamp)
 
-def mine_from_prev_block(prev_block, rounds=STANDARD_ROUNDS, start_nonce=0):
+def mine_from_prev_block(prev_block, rounds=STANDARD_ROUNDS, start_nonce=0, timestamp=None):
   #create new block with correct
-  new_block = utils.create_new_block_from_prev(prev_block=prev_block)
+  new_block = utils.create_new_block_from_prev(prev_block=prev_block, timestamp=timestamp)
   return mine_block(new_block, rounds=rounds, start_nonce=start_nonce)
 
 def mine_block(new_block, rounds=STANDARD_ROUNDS, start_nonce=0):
@@ -45,16 +45,16 @@ def mine_block(new_block, rounds=STANDARD_ROUNDS, start_nonce=0):
     if str(new_block.hash[0:NUM_ZEROS]) == '0' * NUM_ZEROS:
       print "block %s mined. Nonce: %s" % (new_block.index, new_block.nonce)
       assert new_block.is_valid()
-      return new_block, rounds, start_nonce
+      return new_block, rounds, start_nonce, new_block.timestamp
 
   #couldn't find a hash to work with, return rounds and start_nonce
   #as well so we can know what we tried
-  return None, rounds, start_nonce
+  return None, rounds, start_nonce, new_block.timestamp
 
 def mine_for_block_listener(event):
   #need to check if the finishing job is the mining
   if event.job_id == 'mining':
-    new_block, rounds, start_nonce = event.retval
+    new_block, rounds, start_nonce, timestamp = event.retval
     #if didn't mine, new_block is None
     #we'd use rounds and start_nonce to know what the next
     #mining task should use
@@ -65,7 +65,7 @@ def mine_for_block_listener(event):
       sched.add_job(mine_from_prev_block, args=[new_block], kwargs={'rounds':STANDARD_ROUNDS, 'start_nonce':0}, id='mining') #add the block again
     else:
       print event.retval
-      sched.add_job(mine_for_block, kwargs={'rounds':rounds, 'start_nonce':start_nonce+rounds}, id='mining') #add the block again
+      sched.add_job(mine_for_block, kwargs={'rounds':rounds, 'start_nonce':start_nonce+rounds, 'timestamp': timestamp}, id='mining') #add the block again
       sched.print_jobs()
 
 def broadcast_mined_block(new_block):
