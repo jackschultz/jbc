@@ -20,7 +20,6 @@ block_one = Block(block_one_dir)
 block_two = Block(block_two_dir)
 block_three = Block(block_three_dir)
 
-'''
 ###########################
 #
 #  Block time
@@ -120,7 +119,6 @@ with freeze_time(tt):
   mine_test_block_three = utils.find_valid_nonce(poss_block_three)
 
 print mine_test_block_three.__dict__
-'''
 
 #times for mining zero, first, second, and third blocks
 #freezegun generation
@@ -128,7 +126,6 @@ zt = "2012-11-01 12:00:01"
 ft = "2012-11-02 12:00:01"
 st = "2012-11-03 12:00:01"
 tt = "2012-11-04 12:00:01"
-
 
 mine_test_block_zero_dict = {'nonce': 1185358, 'index': 0, 'hash': '00000ff000e7c05047d0acdc8652f096db4115ed8882949a0dc0dbf21666fbec', 'timestamp': 20121101120001000000L, 'prev_hash': '', 'data': 'Mine test block zero.'}
 mine_test_block_zero = Block(mine_test_block_zero_dict)
