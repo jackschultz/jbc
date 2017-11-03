@@ -36,6 +36,7 @@ def mine_from_prev_block(prev_block, rounds=STANDARD_ROUNDS, start_nonce=0, time
   return mine_block(new_block, rounds=rounds, start_nonce=start_nonce)
 
 def mine_block(new_block, rounds=STANDARD_ROUNDS, start_nonce=0):
+  print "Mining for block %s. start_nonce: %s, rounds: %s" % (new_block.index, start_nonce, rounds)
   #Attempting to find a valid nonce to match the required difficulty
   #of leading zeros. We're only going to try 1000
   nonce_range = [i+start_nonce for i in range(rounds)]
