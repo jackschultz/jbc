@@ -8,7 +8,7 @@ import requests
 import glob
 
 def sync_local():
-  local_chain = Chain([])
+  blocks = []
   #We're assuming that the folder and at least initial block exists
   if os.path.exists(CHAINDATA_DIR):
     for filepath in glob.glob(os.path.join(CHAINDATA_DIR, '*.json')):
@@ -18,7 +18,9 @@ def sync_local():
         except:
           print filepath
         local_block = Block(block_info)
-        local_chain.add_block(local_block)
+        blocks.append(local_block)
+  blocks.sort(key=lambda block: block.index)
+  local_chain = Chain(blocks)
   return local_chain
 
 def sync_overall(save=False):
