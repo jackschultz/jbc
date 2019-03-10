@@ -10,7 +10,7 @@ These instructions will get you a copy of the project up and running on your loc
 As always, you'll need to install the Python libraries in requirements.txt
 
 ```
-$ pip install requirements.txt
+$ pip install -r requirements.txt
 ```
 
 ### Running a node
