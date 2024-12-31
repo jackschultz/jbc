@@ -13,7 +13,7 @@ def generate_header(index, prev_hash, data, timestamp, nonce):
 def calculate_hash(index, prev_hash, data, timestamp, nonce):
   header_string = generate_header(index, prev_hash, data, timestamp, nonce)
   sha = hashlib.sha256()
-  sha.update(header_string)
+  sha.update(header_string.encode('utf-8'))
   return sha.hexdigest()
 
 def mine(last_block):
