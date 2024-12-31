@@ -22,7 +22,7 @@ class Block(object):
 
   def create_self_hash(self):
     sha = hashlib.sha256()
-    sha.update(self.header_string())
+    sha.update(self.header_string().encode('utf-8'))
     return sha.hexdigest()
 
   def self_save(self):
